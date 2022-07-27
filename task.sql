@@ -40,45 +40,30 @@ ORDER BY subquery2.std_id ASC
 
 --5
 
-SELECT first_name,
-       surname,
-       phone_numbers
-FROM
-  (SELECT st.id AS student_id,
-          Count(rs.student_id) AS count_marks
-   FROM student st
-   INNER JOIN results rs ON st.id = rs.student_id
-   WHERE rs.mark > 7 GROUP  BY st.id) subquary
-INNER JOIN student st ON (subquary.student_id = st.id
-                          AND subquary.count_marks >= 2);  
+SELECT st.id AS student_id
+FROM student st
+INNER JOIN results rs ON st.id = rs.student_id
+WHERE rs.mark > 7 GROUP  BY st.id
+HAVING Count(rs.student_id) >= 2
 
 --6
                          
-SELECT std_id
-FROM
-  (SELECT rst.student_id AS std_id,
-          rst.subject_id AS sbj_id,
-          count(rst.mark) AS count_mark
-   FROM results rst
-   WHERE rst.mark > 7
-   GROUP BY rst.subject_id,
-            rst.student_id) subquery
-WHERE subquery.count_mark > 1
+SELECT rst.student_id AS std_id
+FROM results rst
+WHERE rst.mark > 7
+GROUP BY rst.subject_id,
+         rst.student_id
+HAVING count(rst.mark) > 1
                    
 --7
                    
-SELECT sbj_id
-FROM
-  (SELECT count(DISTINCT std.primary_skill) AS count_skills,
-          rst.subject_id AS sbj_id,
-          COUNT (rst.student_id) AS count_students
-   FROM student std
-   INNER JOIN results rst ON std.id = rst.student_id
-   WHERE rst.mark > 7
-   GROUP BY rst.subject_id
-   ORDER BY count_skills DESC) AS subquery
-WHERE subquery.count_skills = 1
-  AND subquery.count_students > 1
+SELECT rst.subject_id AS sbj_id
+FROM student std
+INNER JOIN results rst ON std.id = rst.student_id
+WHERE rst.mark > 7
+GROUP BY rst.subject_id
+HAVING COUNT (rst.student_id) > 1
+AND count(DISTINCT std.primary_skill) = 1
                    
 --8
 
@@ -221,14 +206,3 @@ FROM
       FROM results rst
       GROUP BY rst.student_id) subquery ON std.id = subquery.std_id) subquery1
 GROUP BY mark_desc
-
-
-
-                   
-                   
-                   
-                   
-                   
-                   
-                   
-                   
